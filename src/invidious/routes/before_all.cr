@@ -129,5 +129,11 @@ module Invidious::Routes::BeforeAll
     end
 
     env.set "current_page", URI.encode_www_form(current_page)
+
+    unregistered_path_whitelist = {"/login", "/licenses", "/privacy"}
+    if !env.get?("user") && !(unregistered_path_whitelist.includes?(env.request.path) || env.request.path.starts_with?("/feed/webhook/v1:"))
+      env.response.headers["Location"] = "/login"
+      haltf env, status_code: 302
+    end
   end
 end
